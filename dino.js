@@ -1,104 +1,142 @@
+// Дошка
 
-//board
 let board;
 let boardWidth = 750;
-let boardHeight = 250;
+let boardHeight = 500;
 let context;
 
-//dino
+// Динозаврик
+
 let dinoWidth = 88;
 let dinoHeight = 94;
-let dinoX = 50;
-let dinoY = boardHeight - dinoHeight;
-let dinoImg;
+let dinoX = boardWidth / 2 - dinoWidth;
+let dinoY = boardHeight / 2 - dinoHeight;
 
 let dino = {
-    x : dinoX,
-    y : dinoY,
-    width : dinoWidth,
-    height : dinoHeight
+    x: dinoX,
+    y: dinoY,
+    width: dinoWidth,
+    height: dinoHeight,
+    direction: "right",
+    isWalking: false,
+    isDuck: false,
+    runIndex: 0,
 }
 
-//physics
-let velocityX = -8; //cactus moving left speed
-let velocityY = 0;
-let gravity = 0.4;
+let dinoImg = new Image();
+let dinoImgLeft = new Image();
 
-let gameOver = false;
-let score = 0;
+let dinoRunImg1 = new Image();
+let dinoRunImg2 = new Image();
+let dinoRunImg3 = new Image();
+let dinoRunImg4 = new Image();
 
-window.onload = function() {
+let dinoDuckImg1 = new Image();
+let dinoDuckImg2 = new Image();
+let dinoDuckImg3 = new Image();
+let dinoDuckImg4 = new Image();
+
+
+dinoImg.src = "./src/dino.png";
+dinoImgLeft.src = "./src/dino-left.png";
+
+dinoRunImg1.src = "./src/dino-run1.png";
+dinoRunImg2.src = "./src/dino-run2.png";
+dinoRunImg3.src = "./src/dino-run1-left.png";
+dinoRunImg4.src = "./src/dino-run2-left.png";
+
+dinoDuckImg1.src = "./src/dino-duck1.png";
+dinoDuckImg2.src = "./src/dino-duck2.png";
+dinoDuckImg3.src = "./src/dino-duck1-left.png";
+dinoDuckImg4.src = "./src/dino-duck2-left.png";
+
+let dinoRunRight = [dinoRunImg1, dinoRunImg2];
+let dinoRunLeft = [dinoRunImg3, dinoRunImg4];
+let dinoDuckRight = [dinoDuckImg1, dinoDuckImg2];
+let dinoDuckLeft = [dinoDuckImg3, dinoDuckImg4];
+
+
+// Запуск гри
+
+window.onload = function () {
     board = document.getElementById("board");
     board.height = boardHeight;
     board.width = boardWidth;
 
     context = board.getContext("2d");
 
-    dinoImg = new Image();
-    dinoImg.src = "./src/dino.png";
-    dinoImg.onload = function() {
-        context.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
-    }
-
-    cactus1Img = new Image();
-    cactus1Img.src = "./src/cactus1.png";
-
-    cactus2Img = new Image();
-    cactus2Img.src = "./src/cactus2.png";
-
-    cactus3Img = new Image();
-    cactus3Img.src = "./src/cactus3.png";
-
     requestAnimationFrame(update);
-    setInterval(placeCactus, 1000); //1000 milliseconds = 1 second
     document.addEventListener("keydown", moveDino);
+    document.addEventListener("keyup", stopDino);
 }
 
-function update() {
+// Оновлення дошки
+
+function update () {
     requestAnimationFrame(update);
-    if (gameOver) {
-        return;
+    context.clearRect(0, 0, board.width, boardHeight);
+    
+    // Відмальовка динозаврика
+    if (dino.isDuck && dino.direction == "right") {
+        context.drawImage(dinoDuckRight[dino.runIndex], dino.x, dino.y, dino.width, dino.height);
+    }else if (dino.isDuck && dino.direction == "left") {
+        context.drawImage(dinoDuckLeft[dino.runIndex], dino.x, dino.y, dino.width, dino.height);
+    }else if (dino.isWalking && dino.direction == "right") {
+        context.drawImage(dinoRunRight[dino.runIndex], dino.x, dino.y, dino.width, dino.height);
+    }else if (dino.isWalking && dino.direction == "left") {
+        context.drawImage(dinoRunLeft[dino.runIndex], dino.x, dino.y, dino.width, dino.height);
+    }else  if (!dino.isWalking && dino.direction == "right") {
+        context.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
+    }else {
+        context.drawImage(dinoImgLeft, dino.x, dino.y, dino.width, dino.height);
     }
-    context.clearRect(0, 0, board.width, board.height);
-
-    //dino
-    velocityY += gravity;
-    dino.y = Math.min(dino.y + velocityY, dinoY); //apply gravity to current dino.y, making sure it doesn't exceed the ground
-    context.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
-
-    //cactus
-    for (let i = 0; i < cactusArray.length; i++) {
-        let cactus = cactusArray[i];
-        cactus.x += velocityX;
-        context.drawImage(cactus.img, cactus.x, cactus.y, cactus.width, cactus.height);
-
-        if (detectCollision(dino, cactus)) {
-            gameOver = true;
-            dinoImg.src = "./src/dino-dead.png";
-            dinoImg.onload = function() {
-                context.drawImage(dinoImg, dino.x, dino.y, dino.width, dino.height);
-            }
-        }
-    }
-
-    //score
-    context.fillStyle="black";
-    context.font="20px courier";
-    score++;
-    context.fillText(score, 5, 20);
 }
+
+// Рухаємо динозаврика
 
 function moveDino(e) {
-    if (gameOver) {
-        return;
-    }
+    dino.runIndex = (dino.runIndex + 1) % 2;
+    console.log(dino.height, dino.width)
 
-    if ((e.code == "Space" || e.code == "ArrowUp") && dino.y == dinoY) {
-        //jump
-        velocityY = -10;
+    switch (e.code) {
+        case "ArrowUp":
+            dino.isWalking = true;
+            dino.y -= 10;
+            break;
+        case "ArrowDown":
+            dino.isWalking = true;
+            dino.y += 10;
+            break;
+        case "ArrowLeft":
+            dino.direction = "left";
+            dino.isWalking = true;
+            dino.x -= 10;
+            break;
+        case "ArrowRight":
+            dino.direction = "right";
+            dino.isWalking = true;
+            dino.x += 10;
+            break;
+        case "ControlLeft":
+            dino.isDuck = !dino.isDuck;
+            if (dino.isDuck) {
+                dino.width = 118;
+                dino.height = 60;
+                dino.y += 40;
+            }else{
+                dino.width = dinoWidth;
+                dino.height = dinoHeight;
+                dino.y -= 40;
+            }
+            break;
+        default:
+            dino.isWalking = false;
+            break;
     }
-    else if (e.code == "ArrowDown" && dino.y == dinoY) {
-        //duck
-    }
+}
 
+function stopDino(e) {
+    if(e.type=="keyup"){
+        dino.isWalking = false;
+    }
 }
