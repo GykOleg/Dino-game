@@ -19,21 +19,6 @@ let dino = {
     height : dinoHeight
 }
 
-//cactus
-let cactusArray = [];
-
-let cactus1Width = 34;
-let cactus2Width = 69;
-let cactus3Width = 102;
-
-let cactusHeight = 70;
-let cactusX = 700;
-let cactusY = boardHeight - cactusHeight;
-
-let cactus1Img;
-let cactus2Img;
-let cactus3Img;
-
 //physics
 let velocityX = -8; //cactus moving left speed
 let velocityY = 0;
@@ -116,48 +101,4 @@ function moveDino(e) {
         //duck
     }
 
-}
-
-function placeCactus() {
-    if (gameOver) {
-        return;
-    }
-
-    //place cactus
-    let cactus = {
-        img : null,
-        x : cactusX,
-        y : cactusY,
-        width : null,
-        height: cactusHeight
-    }
-
-    let placeCactusChance = Math.random(); //0 - 0.9999...
-
-    if (placeCactusChance > .90) { //10% you get cactus3
-        cactus.img = cactus3Img;
-        cactus.width = cactus3Width;
-        cactusArray.push(cactus);
-    }
-    else if (placeCactusChance > .70) { //30% you get cactus2
-        cactus.img = cactus2Img;
-        cactus.width = cactus2Width;
-        cactusArray.push(cactus);
-    }
-    else if (placeCactusChance > .50) { //50% you get cactus1
-        cactus.img = cactus1Img;
-        cactus.width = cactus1Width;
-        cactusArray.push(cactus);
-    }
-
-    if (cactusArray.length > 5) {
-        cactusArray.shift(); //remove the first element from the array so that the array doesn't constantly grow
-    }
-}
-
-function detectCollision(a, b) {
-    return a.x < b.x + b.width &&   //a's top left corner doesn't reach b's top right corner
-           a.x + a.width > b.x &&   //a's top right corner passes b's top left corner
-           a.y < b.y + b.height &&  //a's top left corner doesn't reach b's bottom left corner
-           a.y + a.height > b.y;    //a's bottom left corner passes b's top left corner
 }
